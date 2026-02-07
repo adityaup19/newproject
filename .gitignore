@@ -1,0 +1,18 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+
+# Generated output
+audio/*.mp3
+audio/*.srt
+output/*.mp4
+
+# Environment
+.env
+
+# IDE
+.vscode/
+.idea/
