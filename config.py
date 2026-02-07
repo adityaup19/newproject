@@ -5,6 +5,10 @@ Configuration and style templates for Instagram Reels generator.
 import os
 from pathlib import Path
 
+from dotenv import load_dotenv
+
+load_dotenv()
+
 # ── Directories ──────────────────────────────────────────────────────────────
 BASE_DIR = Path(__file__).resolve().parent
 AUDIO_DIR = BASE_DIR / "audio"
@@ -30,7 +34,7 @@ OUTPUT_WIDTH = 1080
 OUTPUT_HEIGHT = 1920
 
 # ── Style Templates ─────────────────────────────────────────────────────────
-# Each template defines voice settings and subtitle styling.
+# Each template defines voice settings.
 # Add stock .mp4 files to video/<style_name>/ for background footage.
 STYLE_TEMPLATES = {
     "brainrot": {
@@ -40,11 +44,6 @@ STYLE_TEMPLATES = {
         "elevenlabs_voice_id": "pNInz6obpgDQGcFmaJgB",  # Adam
         "elevenlabs_stability": 0.3,
         "elevenlabs_similarity": 0.8,
-        "subtitle_font_size": 64,
-        "subtitle_color": "&H00FFFFFF",     # white (ASS BGR)
-        "subtitle_outline_color": "&H00000000",
-        "subtitle_outline_width": 4,
-        "subtitle_position": "center",
     },
     "deep_rizz": {
         "description": "Smooth, confident, low-pitched motivational tone",
@@ -53,11 +52,6 @@ STYLE_TEMPLATES = {
         "elevenlabs_voice_id": "VR6AewLTigWG4xSOukaG",  # Arnold
         "elevenlabs_stability": 0.6,
         "elevenlabs_similarity": 0.75,
-        "subtitle_font_size": 58,
-        "subtitle_color": "&H0000FFFF",     # yellow
-        "subtitle_outline_color": "&H00000000",
-        "subtitle_outline_width": 3,
-        "subtitle_position": "center",
     },
     "fake_podcast": {
         "description": "Casual, conversational, two-host energy (single voice)",
@@ -66,11 +60,6 @@ STYLE_TEMPLATES = {
         "elevenlabs_voice_id": "EXAVITQu4vr4xnSDxMaL",  # Bella
         "elevenlabs_stability": 0.5,
         "elevenlabs_similarity": 0.7,
-        "subtitle_font_size": 52,
-        "subtitle_color": "&H00FFFFFF",
-        "subtitle_outline_color": "&H00000000",
-        "subtitle_outline_width": 3,
-        "subtitle_position": "bottom",
     },
 }
 

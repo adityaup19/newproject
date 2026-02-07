@@ -5,8 +5,7 @@ Picks a random stock background clip from video/<style>/, then uses FFmpeg to:
   1. Scale / crop the clip to 9:16 (1080×1920).
   2. Loop or trim the clip to match the audio duration.
   3. Mix in the voiceover audio.
-  4. Burn in SRT subtitles with style-specific formatting.
-  5. Output the final MP4.
+  4. Output the final MP4.
 """
 
 import json
@@ -46,45 +45,9 @@ def pick_background_video(style_name: str) -> Path:
     return random.choice(clips)
 
 
-def _subtitle_filter(subtitle_path: Path, style: dict) -> str:
-    """
-    Build the FFmpeg subtitles filter string with style-specific formatting.
-    """
-    # Escape colons and backslashes in the path for the filtergraph
-    escaped = str(subtitle_path).replace("\\", "\\\\").replace(":", "\\:")
-
-    font_size = style.get("subtitle_font_size", 56)
-    color = style.get("subtitle_color", "&H00FFFFFF")
-    outline_color = style.get("subtitle_outline_color", "&H00000000")
-    outline_width = style.get("subtitle_outline_width", 3)
-
-    position = style.get("subtitle_position", "center")
-    if position == "bottom":
-        alignment = 2   # ASS: bottom-center
-        margin_v = 80
-    else:
-        alignment = 5   # ASS: middle-center
-        margin_v = 0
-
-    force_style = (
-        f"FontSize={font_size},"
-        f"PrimaryColour={color},"
-        f"OutlineColour={outline_color},"
-        f"Outline={outline_width},"
-        f"Alignment={alignment},"
-        f"MarginV={margin_v},"
-        f"FontName=Arial,"
-        f"Bold=1"
-    )
-
-    return f"subtitles={escaped}:force_style='{force_style}'"
-
-
 def render_reel(
     audio_path: Path,
-    subtitle_path: Path,
     style_name: str,
-    style: dict,
     output_path: Path,
 ) -> Path:
     """
@@ -92,9 +55,8 @@ def render_reel(
 
     Steps:
       - Pick a background clip for the style.
-      - Scale+crop to 1080×1920, looping if shorter than the audio.
+      - Scale+crop to 1080x1920, looping if shorter than the audio.
       - Overlay voiceover audio.
-      - Burn in subtitles.
     """
     bg_video = pick_background_video(style_name)
     duration = get_audio_duration(audio_path)
@@ -102,14 +64,11 @@ def render_reel(
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
     # Video filter: scale to fill 1080×1920 then center-crop
-    vf_scale_crop = (
+    vf = (
         f"scale={config.OUTPUT_WIDTH}:{config.OUTPUT_HEIGHT}:"
         f"force_original_aspect_ratio=increase,"
         f"crop={config.OUTPUT_WIDTH}:{config.OUTPUT_HEIGHT}"
     )
-
-    sub_filter = _subtitle_filter(subtitle_path, style)
-    vf = f"{vf_scale_crop},{sub_filter}"
 
     cmd = [
         config.FFMPEG_BIN,

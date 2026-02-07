@@ -3,7 +3,7 @@
 Instagram Reels Generator
 ─────────────────────────
 Takes a text prompt + style template and produces a vertical 9:16 MP4
-with voiceover, stock background video, and burned-in subtitles.
+with voiceover and stock background video.
 
 Usage:
     python main.py "Your script text here" --style brainrot
@@ -17,7 +17,6 @@ from pathlib import Path
 
 from config import AUDIO_DIR, OUTPUT_DIR, get_style
 from voice import generate_voice
-from subtitles import generate_subtitles
 from video import render_reel
 
 
@@ -41,7 +40,7 @@ def generate_reel(
     timestamp = int(time.time())
 
     # ── 1. Voice ─────────────────────────────────────────────────────────
-    print(f"[1/4] Generating voiceover ({tts_provider or 'default'})...")
+    print(f"[1/3] Generating voiceover ({tts_provider or 'default'})...")
     audio_path = generate_voice(
         text=text,
         style=style,
@@ -50,28 +49,17 @@ def generate_reel(
     )
     print(f"       Audio saved → {audio_path}")
 
-    # ── 2. Subtitles ─────────────────────────────────────────────────────
-    print("[2/4] Generating subtitles...")
-    srt_path = generate_subtitles(
-        text=text,
-        audio_path=audio_path,
-        output_path=AUDIO_DIR / f"{timestamp}.srt",
-    )
-    print(f"       Subtitles saved → {srt_path}")
-
-    # ── 3. Pick background video ─────────────────────────────────────────
-    print("[3/4] Selecting background video...")
-
-    # ── 4. Render ────────────────────────────────────────────────────────
+    # ── 2. Pick background video + Render ─────────────────────────────────
     output_path = OUTPUT_DIR / f"{timestamp}.mp4"
-    print("[4/4] Rendering final reel...")
+    print("[2/3] Combining with background video...")
     render_reel(
         audio_path=audio_path,
-        subtitle_path=srt_path,
         style_name=style_name,
-        style=style,
         output_path=output_path,
     )
+
+    # ── 3. Done ──────────────────────────────────────────────────────────
+    print(f"[3/3] Saving final reel to output/...")
     print(f"       Reel saved → {output_path}")
     return output_path
 

@@ -5,11 +5,13 @@ Run with:
     streamlit run app.py
 """
 
+import time
 import streamlit as st
 from pathlib import Path
 
-from config import STYLE_TEMPLATES
-from main import generate_reel
+from config import STYLE_TEMPLATES, AUDIO_DIR, OUTPUT_DIR, get_style
+from voice import generate_voice
+from video import render_reel
 
 # ── Page config ──────────────────────────────────────────────────────────────
 st.set_page_config(
@@ -19,7 +21,7 @@ st.set_page_config(
 )
 
 st.title("Instagram Reels Generator")
-st.caption("Turn any text into a vertical video reel with voiceover and subtitles.")
+st.caption("Turn any text into a vertical video reel with voiceover.")
 
 # ── Sidebar controls ─────────────────────────────────────────────────────────
 with st.sidebar:
@@ -60,14 +62,33 @@ if generate_btn:
         st.warning("Please enter some text before generating.")
     else:
         try:
-            with st.spinner("Generating your reel — this may take a minute..."):
-                output_path: Path = generate_reel(
-                    text=text.strip(),
-                    style_name=style_name,
-                    tts_provider=tts_provider,
-                )
+            style = get_style(style_name)
+            timestamp = int(time.time())
+            status = st.status("Generating your reel...", expanded=True)
 
-            st.success(f"Reel generated successfully!")
+            # Step 1 ─ Voiceover
+            status.write("[1/3] Generating voiceover...")
+            audio_path = generate_voice(
+                text=text.strip(),
+                style=style,
+                provider=tts_provider,
+                output_path=AUDIO_DIR / f"{timestamp}.mp3",
+            )
+
+            # Step 2 ─ Combine video + audio
+            status.write("[2/3] Combining with background video...")
+            output_path = OUTPUT_DIR / f"{timestamp}.mp4"
+            render_reel(
+                audio_path=audio_path,
+                style_name=style_name,
+                output_path=output_path,
+            )
+
+            # Step 3 ─ Done
+            status.write(f"[3/3] Saved final reel to `{output_path}`")
+            status.update(label="Reel generated!", state="complete", expanded=True)
+
+            st.success(f"Reel saved to `{output_path}`")
 
             # ── Video preview ────────────────────────────────────────────
             video_bytes = output_path.read_bytes()
